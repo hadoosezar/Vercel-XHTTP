@@ -1,14 +1,8 @@
-# Vercel XHTTP Relay
 
-### 🇮🇷 راهنمای کامل فارسی — Complete Persian Setup Guide
 
-[![Telegram Channel](https://img.shields.io/badge/Telegram-%40avaco__cloud-26A5E4?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/avaco_cloud)
-
-> 📢 **کانال تلگرام Avaco Cloud** — برای آموزش‌های بیشتر، آپدیت‌ها، روش‌های دور زدن سانسور و کانفیگ‌های جدید عضو شو:
 > 
-> 👉 **[https://t.me/avaco_cloud](https://t.me/avaco_cloud)**
 
-A minimal relay running on **Vercel Serverless Functions** (Node.js runtime, 128MB memory) that forwards **XHTTP** traffic from your Xray/V2Ray client to your backend Xray server. The goal: use Vercel's global edge network and the `*.vercel.app` domain as a front to hide the real IP of your origin server.
+A minimal relay running on **   Serverless Functions** (Node.js runtime, 128MB memory) that forwards **XHTTP** traffic from your Xray/V2Ray client to your backend Xray server. The goal: use   's global edge network and the `*.  .app` domain as a front to hide the real IP of your origin server.
 
 > **v1.1 — Memory Optimization:** switched from Edge Runtime (~1GB per instance) to Node.js Serverless with 128MB memory + Fluid Compute concurrency. **~8x reduction in Provisioned Memory costs.**
 
@@ -26,9 +20,9 @@ A minimal relay running on **Vercel Serverless Functions** (Node.js runtime, 128
 - [مرحله ۴ — نصب Xray](#مرحله-۴--نصب-xray)
 - [مرحله ۵ — گرفتن TLS Certificate](#مرحله-۵--گرفتن-tls-certificate)
 - [مرحله ۶ — کانفیگ Xray با XHTTP](#مرحله-۶--کانفیگ-xray-با-xhttp)
-- [مرحله ۷ — Deploy روی Vercel](#مرحله-۷--deploy-روی-vercel)
+- [مرحله ۷ — Deploy روی   ](#مرحله-۷--deploy-روی-  )
 - [مرحله ۸ — کانفیگ کلاینت](#مرحله-۸--کانفیگ-کلاینت)
-- [محدودیت‌های Vercel](#محدودیت‌های-vercel)
+- [محدودیت‌های   ](#محدودیت‌های-  )
 - [بهینه‌سازی هزینه (v1.1)](#بهینه‌سازی-هزینه-v11)
 - [عیب‌یابی](#عیب‌یابی)
 - [سوالات متداول](#سوالات-متداول)
@@ -37,12 +31,12 @@ A minimal relay running on **Vercel Serverless Functions** (Node.js runtime, 128
 
 ## این پروژه برای کیه؟
 
-این پروژه فقط زمانی به دردت می‌خوره که **خودت یک سرور Xray با XHTTP داری** و می‌خوای IP اون رو با Vercel استتار کنی.
+این پروژه فقط زمانی به دردت می‌خوره که **خودت یک سرور Xray با XHTTP داری** و می‌خوای IP اون رو با    استتار کنی.
 
 ❌ **به دردت نمی‌خوره** اگر:
 - فقط یه کانفیگ آماده (vless/vmess) از فروشنده گرفتی
 - کانفیگت WebSocket / gRPC / Reality / Trojan / TCP هست
-- می‌خوای بدون VPS فقط با Vercel پروکسی بسازی
+- می‌خوای بدون VPS فقط با    پروکسی بسازی
 - **ترافیک سنگین** داری (استریم 4K، دانلود حجیم، torrent، چندکاربره) — چون **Fast Origin Transfer در Hobby خیلی زود تموم می‌شه** و حساب Pause می‌شه
 
 ✅ **به دردت می‌خوره** اگر:
@@ -57,26 +51,26 @@ A minimal relay running on **Vercel Serverless Functions** (Node.js runtime, 128
 ## نحوه‌ی کار (معماری)
 
 ```
-┌──────────┐  TLS, SNI=vercel.com   ┌──────────────┐  HTTP/2   ┌──────────────┐
-│  کلاینت   │ ─────────────────────► │ Vercel Edge  │ ────────► │  سرور Xray   │
+┌──────────┐  TLS, SNI=  .com   ┌──────────────┐  HTTP/2   ┌──────────────┐
+│  کلاینت   │ ─────────────────────► │    Edge  │ ────────► │  سرور Xray   │
 │ (v2rayN/  │      XHTTP request     │  (relay)     │  forward  │ XHTTP inbound│
 │  Hiddify) │                        │              │           │              │
 └──────────┘                        └──────────────┘            └──────────────┘
 ```
 
-1. کلاینت با SNI=`vercel.com` به دامنه‌ی Vercel وصل می‌شه. برای سانسورچی شبیه ترافیک عادی Vercel به‌نظر می‌رسه.
-2. Vercel Serverless Function بدنه‌ی request رو **stream** می‌کنه به سرور Xray.
+1. کلاینت با SNI=`  .com` به دامنه‌ی    وصل می‌شه. برای سانسورچی شبیه ترافیک عادی    به‌نظر می‌رسه.
+2.    Serverless Function بدنه‌ی request رو **stream** می‌کنه به سرور Xray.
 3. پاسخ هم به همون صورت stream می‌شه برمی‌گرده.
 
 ---
 
 ## محدودیت‌ها و هشدارها
 
-🔴 **هشدار مهم — Fast Origin Transfer:** در پلن Hobby هر بایت ترافیک **دو بار** شمرده می‌شه (یک‌بار کلاینت↔Vercel و یک‌بار Vercel↔سرور). اگه سهمیه تموم بشه، Vercel اکانتت رو **Pause می‌کنه**، کاربرا دیگه نمی‌تونن وصل بشن و **۳۰ روز** باید صبر کنی یا Pro بخری. جزئیات در بخش [محدودیت‌های Vercel](#محدودیت‌های-vercel).
+🔴 **هشدار مهم — Fast Origin Transfer:** در پلن Hobby هر بایت ترافیک **دو بار** شمرده می‌شه (یک‌بار کلاینت↔   و یک‌بار   ↔سرور). اگه سهمیه تموم بشه،    اکانتت رو **Pause می‌کنه**، کاربرا دیگه نمی‌تونن وصل بشن و **۳۰ روز** باید صبر کنی یا Pro بخری. جزئیات در بخش [محدودیت‌های   ](#محدودیت‌های-  ).
 
-⚠️ **فقط XHTTP**: WebSocket, gRPC, TCP, mKCP, QUIC و Reality روی Vercel Edge کار **نمی‌کنه** (محدودیت runtime).
+⚠️ **فقط XHTTP**: WebSocket, gRPC, TCP, mKCP, QUIC و Reality روی    Edge کار **نمی‌کنه** (محدودیت runtime).
 
-⚠️ **TOS Vercel**: استفاده‌ی proxy ممکنه TOS رو نقض کنه. اگه ترافیک بالا باشه، اکانتت ممکنه suspend بشه. ترافیک رو متعادل نگه دار.
+⚠️ **TOS   **: استفاده‌ی proxy ممکنه TOS رو نقض کنه. اگه ترافیک بالا باشه، اکانتت ممکنه suspend بشه. ترافیک رو متعادل نگه دار.
 
 ⚠️ **آموزشی**: این repo برای آموزش و تست شخصیه، نه production. هیچ SLA و پشتیبانی نداره.
 
@@ -84,7 +78,7 @@ A minimal relay running on **Vercel Serverless Functions** (Node.js runtime, 128
 
 برای جلوگیری از قطع شدن اتصال در وسط ماه:
 
-- 📊 **Dashboard → Usage** رو **هفتگی** چک کن (Vercel هنگام ۸۰٪ و ۱۰۰٪ ایمیل می‌فرسته)
+- 📊 **Dashboard → Usage** رو **هفتگی** چک کن (   هنگام ۸۰٪ و ۱۰۰٪ ایمیل می‌فرسته)
 - 🔄 **چند پروژه Hobby** با چند اکانت Gmail بساز و در کلاینت به‌صورت **Load Balance / Failover** تنظیم کن
 - ⏸ ویدیوهای 4K و دانلودهای حجیم رو از پروکسی **خارج** کن (مستقیم یا از پروکسی دیگه)
 - 💳 اگه ترافیک زیاد داری، **Pro ($20/ماه)** بگیر و با **Spend Management** سقف هزینه بذار
@@ -97,8 +91,8 @@ A minimal relay running on **Vercel Serverless Functions** (Node.js runtime, 128
 |---|---|
 | **VPS** | یک سرور لینوکس خارج از ایران با IP عمومی (ترجیحاً Ubuntu 22.04 یا 24.04) |
 | **دامنه** | یک دامنه (پولی یا رایگان مثل DuckDNS) که A record اون به IP سرور اشاره کنه |
-| **اکانت Vercel** | رایگان از [vercel.com](https://vercel.com) |
-| **Node.js + npm** | روی سیستم محلی برای Vercel CLI (می‌تونی از داشبورد هم deploy کنی) |
+| **اکانت   ** | رایگان از [  .com](https://  .com) |
+| **Node.js + npm** | روی سیستم محلی برای    CLI (می‌تونی از داشبورد هم deploy کنی) |
 | **اکانت GitHub** | اختیاری، اگه از روش Dashboard استفاده می‌کنی |
 
 ### ابزارهای لازم بر اساس سیستم‌عامل
@@ -114,7 +108,7 @@ A minimal relay running on **Vercel Serverless Functions** (Node.js runtime, 128
 | **PowerShell** | از قبل نصبه (در منوی Start جستجو کن) | اجرای دستورات |
 | **OpenSSH Client** | از قبل در Win10/11 نصبه ([راهنما](https://learn.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse)) | اتصال SSH |
 | **Git for Windows** | [git-scm.com/download/win](https://git-scm.com/download/win) | git + Git Bash |
-| **Node.js LTS** | [nodejs.org](https://nodejs.org) — installer رو دانلود و Next-Next-Finish | برای Vercel CLI |
+| **Node.js LTS** | [nodejs.org](https://nodejs.org) — installer رو دانلود و Next-Next-Finish | برای    CLI |
 | **PuTTY** (اختیاری) | [putty.org](https://www.putty.org/) | جایگزین SSH با GUI |
 
 > 💡 **توصیه:** بعد از نصب Git for Windows از **Git Bash** استفاده کن، چون دستورات یونیکسی (مثل `curl`, `ssh`, `cat`) داخلش طبیعی کار می‌کنن. این راهنما رو راحت‌تر می‌کنه.
@@ -453,13 +447,13 @@ curl -vk https://127.0.0.1:2096/yourpath
 
 ---
 
-## مرحله ۷ — Deploy روی Vercel
+## مرحله ۷ — Deploy روی   
 
 دو روش: **CLI** (سریع‌تر) یا **Dashboard** (با GitHub).
 
-### روش A: Vercel CLI
+### روش A:    CLI
 
-#### نصب Node.js و Vercel CLI
+#### نصب Node.js و    CLI
 
 **🍎 Mac:**
 ```bash
@@ -467,16 +461,16 @@ curl -vk https://127.0.0.1:2096/yourpath
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
 brew install node
-sudo npm i -g vercel
-vercel --version
+sudo npm i -g   
+   --version
 ```
 
 **🐧 Linux (Ubuntu/Debian):**
 ```bash
 sudo apt update
 sudo apt install -y nodejs npm
-sudo npm i -g vercel
-vercel --version
+sudo npm i -g   
+   --version
 ```
 
 **🪟 Windows:**
@@ -487,19 +481,19 @@ vercel --version
    - دابل‌کلیک کن، Next تا Finish
    - حتماً تیک **Add to PATH** فعال باشه
 
-2. **نصب Vercel CLI** (در PowerShell یا Git Bash):
+2. **نصب    CLI** (در PowerShell یا Git Bash):
    ```powershell
-   npm i -g vercel
-   vercel --version
+   npm i -g   
+      --version
    ```
    
    اگه permission error داد، PowerShell رو **As Administrator** باز کن و دوباره بزن.
 
-#### لاگین به Vercel
+#### لاگین به   
 
 **در هر سیستم‌عاملی:**
 ```bash
-vercel login
+   login
 ```
 
 با فلش `Continue with Email` رو انتخاب کن، ایمیلت رو بزن، روی لینک تأیید کلیک کن.
@@ -508,16 +502,16 @@ vercel login
 
 **🍎 Mac / 🐧 Linux / 🪟 Git Bash:**
 ```bash
-git clone https://github.com/YOUR-USERNAME/vercel-xhttp-relay.git
-cd vercel-xhttp-relay
-vercel
+git clone https://github.com/YOUR-USERNAME/  -xhttp-relay.git
+cd   -xhttp-relay
+  
 ```
 
 **🪟 Windows PowerShell:**
 ```powershell
-git clone https://github.com/YOUR-USERNAME/vercel-xhttp-relay.git
-cd vercel-xhttp-relay
-vercel
+git clone https://github.com/YOUR-USERNAME/  -xhttp-relay.git
+cd   -xhttp-relay
+  
 ```
 
 سؤالات:
@@ -529,7 +523,7 @@ vercel
 #### تنظیم Environment Variable
 
 ```bash
-vercel env add TARGET_DOMAIN
+   env add TARGET_DOMAIN
 ```
 
 - مقدار: `https://xray.yourdomain.com:2096`
@@ -540,37 +534,37 @@ vercel env add TARGET_DOMAIN
 #### Deploy نهایی
 
 ```bash
-vercel --prod
+   --prod
 ```
 
-URL مثل `https://your-project.vercel.app` می‌گیری.
+URL مثل `https://your-project.  .app` می‌گیری.
 
 ### روش B: Dashboard (با GitHub)
 
 1. ریپوی این پروژه رو fork یا clone کن و به GitHub خودت push کن.
-2. در [vercel.com/new](https://vercel.com/new) ریپو رو **Import** کن.
+2. در [  .com/new](https://  .com/new) ریپو رو **Import** کن.
 3. در صفحه‌ی تنظیمات، بخش **Environment Variables**:
    - `TARGET_DOMAIN` = `https://xray.yourdomain.com:2096`
 4. **Deploy** بزن.
 
 ### غیرفعال کردن Deployment Protection
 
-اگه موقع setup گزینه‌ی **Vercel Authentication** رو روشن گذاشتی، باید خاموشش کنی وگرنه relay کار نمی‌کنه:
+اگه موقع setup گزینه‌ی **   Authentication** رو روشن گذاشتی، باید خاموشش کنی وگرنه relay کار نمی‌کنه:
 
-1. داشبورد Vercel → پروژه → **Settings → Deployment Protection**
-2. **Vercel Authentication** رو روی **Disabled** بذار
+1. داشبورد    → پروژه → **Settings → Deployment Protection**
+2. **   Authentication** رو روی **Disabled** بذار
 3. **Save**
 
 ### تست relay
 
 **🍎 Mac / 🐧 Linux / 🪟 Git Bash / 🪟 PowerShell (Win 10+):**
 ```bash
-curl -I https://your-project.vercel.app/yourpath
+curl -I https://your-project.  .app/yourpath
 ```
 
 **🪟 Windows PowerShell (نسخه‌ی native):**
 ```powershell
-Invoke-WebRequest -Uri "https://your-project.vercel.app/yourpath" -Method Head
+Invoke-WebRequest -Uri "https://your-project.  .app/yourpath" -Method Head
 ```
 
 > 💡 در ویندوز ۱۰+ خود `curl.exe` نصبه و کار می‌کنه.
@@ -590,12 +584,12 @@ Invoke-WebRequest -Uri "https://your-project.vercel.app/yourpath" -Method Head
 
 ```
 UUID:        UUID خودت
-Address:     vercel.com
+Address:       .com
 Port:        443
-SNI:         vercel.com
+SNI:           .com
 Type:        xhttp
 Path:        /yourpath
-Host:        your-project.vercel.app
+Host:        your-project.  .app
 Mode:        auto
 TLS:         on
 ALPN:        h2
@@ -605,7 +599,7 @@ Fingerprint: chrome
 ### لینک VLESS share
 
 ```
-vless://YOUR-UUID@vercel.com:443?encryption=none&security=tls&sni=vercel.com&alpn=h2&fp=chrome&type=xhttp&path=%2Fyourpath&host=your-project.vercel.app&mode=auto#Vercel-Relay
+vless://YOUR-UUID@  .com:443?encryption=none&security=tls&sni=  .com&alpn=h2&fp=chrome&type=xhttp&path=%2Fyourpath&host=your-project.  .app&mode=auto#  -Relay
 ```
 
 > توجه: `/` در path رو با `%2F` encode کن.
@@ -638,16 +632,16 @@ https://ifconfig.me
 
 ---
 
-## محدودیت‌های Vercel
+## محدودیت‌های   
 
-> ⚠️ این اعداد از مستندات رسمی Vercel در زمان نوشتن این README هستن. ممکنه تغییر کرده باشن — برای آخرین آپدیت [vercel.com/pricing](https://vercel.com/pricing) و [vercel.com/docs/limits](https://vercel.com/docs/limits) رو چک کن.
+> ⚠️ این اعداد از مستندات رسمی    در زمان نوشتن این README هستن. ممکنه تغییر کرده باشن — برای آخرین آپدیت [  .com/pricing](https://  .com/pricing) و [  .com/docs/limits](https://  .com/docs/limits) رو چک کن.
 
 ### اعداد عمومی
 
 | محدودیت | Hobby (رایگان) | Pro |
 |---|---|---|
-| **Fast Data Transfer** (کلاینت ↔ Vercel) | ۱۰۰ GB / ماه | ۱ TB / ماه |
-| **Fast Origin Transfer** (Vercel ↔ سرور پشتی) | **۱۰ GB / ماه** | ~۱۰۰ GB / ماه |
+| **Fast Data Transfer** (کلاینت ↔   ) | ۱۰۰ GB / ماه | ۱ TB / ماه |
+| **Fast Origin Transfer** (   ↔ سرور پشتی) | **۱۰ GB / ماه** | ~۱۰۰ GB / ماه |
 | **Edge Requests** | ۱M / ماه | ۱۰M / ماه |
 | **Function Invocations** | ۱M / ماه | ۱۰M / ماه |
 | **Fluid Active CPU** | ۴ ساعت / ماه | ۴۰ ساعت / ماه |
@@ -664,7 +658,7 @@ https://ifconfig.me
 
 > 💡 اگر مصرفت نزدیک سقف Hobby می‌رسه (به‌خصوص `Fast Origin Transfer`)، برای پایداری بهتر به `Pro` مهاجرت کن یا چند relay جداگانه داشته باش.
 
-> 📚 منبع رسمی: [Vercel Pricing](https://vercel.com/pricing)
+> 📚 منبع رسمی: [   Pricing](https://  .com/pricing)
 
 ### 🔴 نکته‌ی خیلی مهم: Fast Origin Transfer
 
@@ -674,7 +668,7 @@ https://ifconfig.me
 
 ```
 ┌─────────┐   Fast Data    ┌────────┐   Fast Origin   ┌───────────┐
-│ کلاینت   │ ─────────────► │ Vercel │ ─────────────► │ Xray سرور │
+│ کلاینت   │ ─────────────► │    │ ─────────────► │ Xray سرور │
 │         │   Transfer     │  Edge  │   Transfer      │           │
 └─────────┘                └────────┘                 └───────────┘
             (سهمیه ۱ — کلاینت)        (سهمیه ۲ — origin)
@@ -683,7 +677,7 @@ https://ifconfig.me
 - ۱ GB دانلود از سمت تو = ۱ GB Fast Data + ۱ GB Fast Origin مصرف می‌شه
 - اگه Fast Origin Transfer به حدش برسه، حساب Hobby ت **pause می‌شه** و باید ۳۰ روز صبر کنی یا upgrade کنی
 
-> 📚 [مستندات Fast Origin Transfer](https://vercel.com/docs/manage-cdn-usage)
+> 📚 [مستندات Fast Origin Transfer](https://  .com/docs/manage-cdn-usage)
 
 ### تخمین مصرف Hobby (محافظه‌کارانه)
 
@@ -726,7 +720,7 @@ https://ifconfig.me
 
 ### تنظیمات اعمال‌شده
 
-**`vercel.json`:**
+**`  .json`:**
 ```json
 "functions": {
   "api/index.js": {
@@ -748,7 +742,7 @@ https://ifconfig.me
 ```json
 "xhttpSettings": {
   "path": "/yourpath",
-  "host": "your-project.vercel.app",
+  "host": "your-project.  .app",
   "mode": "auto",
   "xmux": {
     "maxConnections": 2,
@@ -758,7 +752,7 @@ https://ifconfig.me
 }
 ```
 
-- **`maxConnections: 2`** → حداکثر ۲ اتصال HTTP همزمان به Vercel
+- **`maxConnections: 2`** → حداکثر ۲ اتصال HTTP همزمان به   
 - **`maxConcurrency: 16`** → هر اتصال تا ۱۶ stream رو multiplex می‌کنه
 
 > ⚠️ در **v2rayNG** و **Hiddify** معمولاً XMUX از GUI قابل تنظیم نیست — باید **Custom Config** استفاده کنی.
@@ -778,7 +772,7 @@ https://ifconfig.me
 ## عیب‌یابی
 
 ### `502 Bad Gateway: Tunnel Failed`
-Vercel به سرور پشتی نمی‌رسه. چک کن:
+   به سرور پشتی نمی‌رسه. چک کن:
 - `TARGET_DOMAIN` دقیقاً درسته (`https://...:port`)
 - Xray در سرور بالاست: `systemctl status xray`
 - پورت در فایروال بازه: `ufw status`
@@ -786,12 +780,12 @@ Vercel به سرور پشتی نمی‌رسه. چک کن:
 ### `500 Misconfigured: TARGET_DOMAIN is not set`
 Env var ست نشده یا redeploy نشده. بزن:
 ```bash
-vercel env ls
-vercel --prod
+   env ls
+   --prod
 ```
 
 ### `401 Unauthorized` با HTML login
-Vercel Authentication روشنه. در داشبورد → Settings → Deployment Protection → Disabled.
+   Authentication روشنه. در داشبورد → Settings → Deployment Protection → Disabled.
 
 ### کلاینت وصل می‌شه ولی ترافیک رد نمی‌شه
 - Mux رو خاموش کن
@@ -799,11 +793,11 @@ Vercel Authentication روشنه. در داشبورد → Settings → Deploymen
 - Routing → Bypass Iran رو فعال کن
 
 ### TLS handshake error در کلاینت
-- SNI رو از `vercel.com` به `your-project.vercel.app` عوض کن
+- SNI رو از `  .com` به `your-project.  .app` عوض کن
 - ALPN رو فقط `h2` بذار
 
 ### کلاینت فقط روی Wi-Fi کار می‌کنه نه دیتای موبایل
-ISP موبایل ممکنه `*.vercel.app` رو bottleneck کنه. یه Custom Domain به Vercel وصل کن (Settings → Domains).
+ISP موبایل ممکنه `*.  .app` رو bottleneck کنه. یه Custom Domain به    وصل کن (Settings → Domains).
 
 ### `Configuration OK` ولی Xray کرش می‌کنه
 لاگ خطا رو ببین:
@@ -819,11 +813,11 @@ chown -R nobody:nogroup /etc/xray /var/log/xray
 
 ## سوالات متداول
 
-### آیا می‌تونم با Cloudflare به‌جای Vercel این کار رو بکنم؟
-بله، ولی با کد متفاوت (Cloudflare Workers). برای WebSocket، Cloudflare Workers بهتره. برای XHTTP، Vercel به‌خاطر streaming WebStreams پایدارتره.
+### آیا می‌تونم با Cloudflare به‌جای    این کار رو بکنم؟
+بله، ولی با کد متفاوت (Cloudflare Workers). برای WebSocket، Cloudflare Workers بهتره. برای XHTTP،    به‌خاطر streaming WebStreams پایدارتره.
 
-### اگه `*.vercel.app` در ایران فیلتر بشه؟
-یه دامنه‌ی شخصی به Vercel وصل کن (Settings → Domains → Add). بعد در کلاینت `host` و `address` رو همون بذار.
+### اگه `*.  .app` در ایران فیلتر بشه؟
+یه دامنه‌ی شخصی به    وصل کن (Settings → Domains → Add). بعد در کلاینت `host` و `address` رو همون بذار.
 
 ### چند کاربر می‌تونن همزمان وصل بشن؟
 محدودیت سختی نیست، ولی برای هر کاربر یه UUID جدا بساز:
@@ -835,11 +829,11 @@ chown -R nobody:nogroup /etc/xray /var/log/xray
 ```
 
 ### آیا می‌تونم پورت ۲۰۹۶ رو عوض کنم؟
-بله. پورت دلخواه رو در `config.json` بذار، در ufw allow کن، و در `TARGET_DOMAIN` در Vercel همون پورت رو بذار.
+بله. پورت دلخواه رو در `config.json` بذار، در ufw allow کن، و در `TARGET_DOMAIN` در    همون پورت رو بذار.
 
-### چطور لاگ Vercel رو ببینم؟
+### چطور لاگ    رو ببینم؟
 ```bash
-vercel logs --follow
+   logs --follow
 ```
 یا در داشبورد → پروژه → **Logs**.
 
@@ -863,7 +857,7 @@ MIT — مثل پروژه‌ی اصلی.
 
 ## Disclaimer
 
-این پروژه برای آموزش و تست شخصیه. مسئولیت استفاده با خودته. قوانین کشور و TOS Vercel رو رعایت کن.
+این پروژه برای آموزش و تست شخصیه. مسئولیت استفاده با خودته. قوانین کشور و TOS    رو رعایت کن.
 
 ---
 
